@@ -250,35 +250,27 @@ function stopShuffleWithPreConfig() {
         shuffleState.intervalId = null;
     }
     
-    // Check if pre-configured seats are set
-    const hasPreConfig = settings.preConfiguredSeats.some(seat => seat !== null);
+    // Check if all active seats have pre-configured values
+    let allPreConfigured = true;
+    for (let i = 0; i < 36; i++) {
+        if (settings.activeSeats[i] && settings.preConfiguredSeats[i] === null) {
+            allPreConfigured = false;
+            break;
+        }
+    }
     
-    if (hasPreConfig) {
-        // Use pre-configured seats
-        const numbers = [];
+    if (allPreConfigured) {
+        // Display pre-configured seats
         for (let i = 0; i < 36; i++) {
-            if (settings.activeSeats[i] && settings.preConfiguredSeats[i] !== null) {
-                numbers.push(settings.preConfiguredSeats[i]);
+            if (settings.activeSeats[i]) {
+                const seat = document.getElementById(`seat-${i}`);
+                seat.textContent = settings.preConfiguredSeats[i];
             }
         }
-        
-        // If pre-config is incomplete, fill with random for missing seats
-        if (numbers.length < settings.studentCount) {
-            // Use random instead
-            const randomNumbers = getRandomNumbers();
-            displayNumbers(randomNumbers);
-        } else {
-            let numberIndex = 0;
-            for (let i = 0; i < 36; i++) {
-                if (settings.activeSeats[i]) {
-                    const seat = document.getElementById(`seat-${i}`);
-                    seat.textContent = settings.preConfiguredSeats[i] !== null 
-                        ? settings.preConfiguredSeats[i] 
-                        : numbers[numberIndex];
-                    numberIndex++;
-                }
-            }
-        }
+    } else {
+        // Fall back to random if pre-config is incomplete
+        const randomNumbers = getRandomNumbers();
+        displayNumbers(randomNumbers);
     }
     
     showCompletionMessage();
