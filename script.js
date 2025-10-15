@@ -253,6 +253,7 @@ function stopShuffleWithPreConfig() {
     // Check if all active seats have pre-configured values
     let allPreConfigured = true;
     for (let i = 0; i < 36; i++) {
+        // Use == null to catch both null and undefined (for backward compatibility with old saved data)
         if (settings.activeSeats[i] && settings.preConfiguredSeats[i] == null) {
             allPreConfigured = false;
             break;
