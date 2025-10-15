@@ -2,7 +2,7 @@
 let settings = {
     studentCount: 36,
     activeSeats: Array(36).fill(true),
-    preConfiguredSeats: Array(36).fill(null)
+    preConfiguredSeats: Array.from({ length: 36 }, (_, i) => i + 1)
 };
 
 let shuffleState = {
@@ -45,6 +45,13 @@ function loadSettings() {
     const saved = localStorage.getItem('seatShufflerSettings');
     if (saved) {
         settings = JSON.parse(saved);
+        
+        // Ensure preConfiguredSeats always has valid values (no nulls)
+        for (let i = 0; i < 36; i++) {
+            if (settings.preConfiguredSeats[i] === null || settings.preConfiguredSeats[i] === undefined) {
+                settings.preConfiguredSeats[i] = i + 1;
+            }
+        }
     }
 }
 
@@ -67,7 +74,8 @@ function saveSettings() {
     const preConfigInputs = document.querySelectorAll('#preConfigGrid input');
     preConfigInputs.forEach((input, index) => {
         const value = input.value.trim();
-        settings.preConfiguredSeats[index] = value === '' ? null : parseInt(value);
+        // If empty, use default value (seat position number)
+        settings.preConfiguredSeats[index] = value === '' ? index + 1 : parseInt(value);
     });
 
     // Validate active seat count matches student count
@@ -250,27 +258,12 @@ function stopShuffleWithPreConfig() {
         shuffleState.intervalId = null;
     }
     
-    // Check if all active seats have pre-configured values
-    let allPreConfigured = true;
+    // Display pre-configured seats
     for (let i = 0; i < 36; i++) {
-        if (settings.activeSeats[i] && settings.preConfiguredSeats[i] === null) {
-            allPreConfigured = false;
-            break;
+        if (settings.activeSeats[i]) {
+            const seat = document.getElementById(`seat-${i}`);
+            seat.textContent = settings.preConfiguredSeats[i];
         }
-    }
-    
-    if (allPreConfigured) {
-        // Display pre-configured seats
-        for (let i = 0; i < 36; i++) {
-            if (settings.activeSeats[i]) {
-                const seat = document.getElementById(`seat-${i}`);
-                seat.textContent = settings.preConfiguredSeats[i];
-            }
-        }
-    } else {
-        // Fall back to random if pre-config is incomplete
-        const randomNumbers = getRandomNumbers();
-        displayNumbers(randomNumbers);
     }
     
     showCompletionMessage();
